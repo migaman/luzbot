@@ -1,2 +1,2 @@
-[[https://github.com/migaman/luzbot/blob/master/images/logo.png|alt=luzbot]]
+[[https://raw.githubusercontent.com/migaman/luzbot/master/images/logo.png|alt=luzbot]]
 # luzbot
