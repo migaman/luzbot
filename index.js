@@ -28,12 +28,18 @@ app.post('/webhook', function (req, res) {
     for (i = 0; i < events.length; i++) {
         var event = events[i];
         if (event.message && event.message.text) {
-            sendMessage(event.sender.id, {text: "Echo Oktober 2017/2: " + event.message.text});
+			var msg = getAnswer(event.message.text);
+			//{text: "Echo Oktober 2017/2: " + event.message.text};
+            sendMessage(event.sender.id, msg);
         }
     }
     res.sendStatus(200);
 });
 
+
+function getAnswer(question) {
+    return "Echo: " + question;
+}
 
 // generic function sending messages
 function sendMessage(recipientId, message) {  
@@ -47,7 +53,7 @@ function sendMessage(recipientId, message) {
         }
     }, function(error, response, body) {
         if (error) {
-            console.log('Error sending message2: ', error);
+            console.log('Error sending message: ', error);
         } else if (response.body.error) {
             console.log('Error: ', response.body.error);
         }
