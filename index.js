@@ -38,7 +38,14 @@ app.post('/webhook', function (req, res) {
 
 
 function getAnswer(question) {
-    return "Echo: " + question;
+	var answer = "";
+	if(question.toUpperCase() == "HI") {
+		answer = "Hi. How are you?";
+	}
+	else {
+		answer = "Mmmmh.... what do you mean with " + question;
+	}
+    return answer;
 }
 
 // generic function sending messages
