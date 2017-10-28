@@ -42,7 +42,8 @@ function getAnswer(question) {
 }
 
 // generic function sending messages
-function sendMessage(recipientId, message) {  
+function sendMessage(recipientId, msg) {  
+	var message = {text: msg}; 
     request({
         url: 'https://graph.facebook.com/v2.10/me/messages',
         qs: {access_token: process.env.PAGE_ACCESS_TOKEN},
