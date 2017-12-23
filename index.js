@@ -77,7 +77,7 @@ app.post('/webhook', function (req, res) {
 				console.log('New message detected, sender: ' + sender);
 				console.log('New message detected, sessionId: ' + sessionId);
 					
-				wit.message(usersMessage, {})
+				wit.message(question, {})
 					.then((data) => 
 					{
 						var body = JSON.stringify(data);
