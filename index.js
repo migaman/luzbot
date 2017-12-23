@@ -54,6 +54,9 @@ app.post('/webhook', function (req, res) {
 		
 			text = event.message.text;
 		
+			var msg = getAnswer(event.message.text);
+            sendMessage(event.sender.id, msg);
+		
 			// Let's forward the message to the Wit.ai Bot Engine
             // This will run all actions until our bot has nothing left to do
             wit.runActions(
@@ -80,8 +83,7 @@ app.post('/webhook', function (req, res) {
             })
 			
 			
-			//var msg = getAnswer(event.message.text);
-            //sendMessage(event.sender.id, msg);
+			
         }
     }
     res.sendStatus(200);
@@ -92,6 +94,9 @@ function getAnswer(question) {
 	var answer = "";
 	if(question.toUpperCase() == "HI") {
 		answer = "Hi. How are you?";
+	}
+	else if(question.toUpperCase() == "TOKEN") {
+		answer = "Token ist: " + WIT_TOKEN;
 	}
 	else {
 		answer = "Mmmmh.... what do you mean with " + question;
