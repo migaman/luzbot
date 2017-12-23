@@ -14,13 +14,14 @@ try {
   log = require('node-wit').log;
 }
 
-// Wit.ai parameters
+// Variables are defined in Heroku
 const WIT_TOKEN = process.env.WIT_TOKEN;
-
+const FB_PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+const PORT = process.env.PORT;
 
 app.use(bodyParser.urlencoded({extended: false}));  
 app.use(bodyParser.json());  
-app.listen((process.env.PORT || 3000));
+app.listen(PORT);
 
 // Server frontpage
 app.get('/', function (req, res) {  
@@ -95,9 +96,11 @@ function getAnswer(question) {
 	if(question.toUpperCase() == "HI") {
 		answer = "Hi. How are you?";
 	}
+	/* Token wird korrekt zur
 	else if(question.toUpperCase() == "TOKEN") {
 		answer = "Token ist: " + WIT_TOKEN;
 	}
+	*/
 	else {
 		answer = "Mmmmh.... what do you mean with " + question;
 	}
@@ -115,7 +118,7 @@ function sendMessage(recipientId, msg) {
 	var message = {text: msg}; 
     request({
         url: 'https://graph.facebook.com/v2.10/me/messages',
-        qs: {access_token: process.env.PAGE_ACCESS_TOKEN},
+        qs: {access_token: FB_PAGE_ACCESS_TOKEN},
         method: 'POST',
         json: {
             recipient: {id: recipientId},
