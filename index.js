@@ -20,12 +20,14 @@ try {
 const WIT_TOKEN = process.env.WIT_TOKEN;
 const FB_PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const PORT = process.env.PORT;
+//Needs feature Dyno Metadata (https://stackoverflow.com/questions/7917523/how-do-i-access-the-current-heroku-release-version-programmatically)
 const VERSION = process.env.HEROKU_RELEASE_VERSION;
 
 
 app.use(bodyParser.urlencoded({extended: false}));  
 app.use(bodyParser.json());  
 app.listen(PORT);
+console.log('Listening on :' + PORT + '...');
 
 // Server frontpage
 app.get('/', function (req, res) {  
@@ -152,13 +154,13 @@ function sendMessage(recipientId, msg) {
 
 // See the Send API reference
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
-/*
+
 const fbMessage = (id, text) => {
   const body = JSON.stringify({
     recipient: { id },
     message: { text },
   });
-  const qs = 'access_token=' + encodeURIComponent(FB_PAGE_TOKEN);
+  const qs = 'access_token=' + encodeURIComponent(FB_PAGE_ACCESS_TOKEN);
   return fetch('https://graph.facebook.com/me/messages?' + qs, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -172,7 +174,7 @@ const fbMessage = (id, text) => {
     return json;
   });
 };
-*/
+
 // ----------------------------------------------------------------------------
 // Wit.ai bot specific code
 
@@ -201,14 +203,17 @@ const findOrCreateSession = (fbid) => {
 // Our bot actions
 const actions = {
   send({sessionId}, {text}) {
+	console.log('Our bot has something to say!');
     // Our bot has something to say!
     // Let's retrieve the Facebook user whose session belongs to
     const recipientId = sessions[sessionId].fbid;
+	console.log('Our bot has something to say!' + recipientId);
     if (recipientId) {
+		console.log('// Yay, we found our recipient!');
       // Yay, we found our recipient!
       // Let's forward our bot response to her.
       // We return a promise to let our bot know when we're done sending
-      return sendMessage(recipientId, text)
+      return fbMessage(recipientId, text)
       .then(() => null)
       .catch((err) => {
         console.error(
