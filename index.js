@@ -62,7 +62,7 @@ app.post('/webhook', function (req, res) {
 			var text = event.message.text;
 		
 			var msg = getAnswer(event.message.text);
-            sendMessage(event.sender.id, msg);
+            
 		
 			console.log('New message detected, text: ' + msg);
 			console.log('New message detected, sender: ' + sender);
@@ -71,10 +71,14 @@ app.post('/webhook', function (req, res) {
 			wit.message('what is the weather in London?', {})
 			.then((data) => {
 			  console.log('Yay, got Wit.ai response: ' + JSON.stringify(data));
+			  msg = body;
+			  
 			})
 			.catch(console.error);
 			
-			console.log('finished');
+			
+			sendMessage(event.sender.id, msg);
+			
 		
 			// Let's forward the message to the Wit.ai Bot Engine
             // This will run all actions until our bot has nothing left to do
