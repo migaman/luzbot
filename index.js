@@ -64,11 +64,11 @@ app.post('/webhook', function (req, res) {
 		
 			
 			if(question.toUpperCase() == "HI") {
-				answer = "Hi. How are you?";
+				var answer = "Hi. How are you?";
 				sendMessage(event.sender.id, answer);
 			}
 			else if(question.toUpperCase() == "VERSION") {
-				answer = "Aktuelle Version ist " + VERSION;
+				var answer = "Aktuelle Version ist " + VERSION;
 				sendMessage(event.sender.id, answer);
 			}
 			else {
