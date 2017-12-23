@@ -20,6 +20,8 @@ try {
 const WIT_TOKEN = process.env.WIT_TOKEN;
 const FB_PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const PORT = process.env.PORT;
+const VERSION = process.env.HEROKU_RELEASE_VERSION;
+
 
 app.use(bodyParser.urlencoded({extended: false}));  
 app.use(bodyParser.json());  
@@ -103,7 +105,7 @@ function getAnswer(question) {
 		answer = "Hi. How are you?";
 	}
 	else if(question.toUpperCase() == "VERSION") {
-		answer = "Aktuelle Version ist 0.0.1 ";
+		answer = "Aktuelle Version ist " + VERSION;
 	}
 	/* Token wird korrekt zur
 	else if(question.toUpperCase() == "TOKEN") {
