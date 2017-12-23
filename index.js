@@ -46,7 +46,7 @@ app.post('/webhook', function (req, res) {
     for (var i = 0; i < events.length; i++) {
         var event = events[i];
         if (event.message && event.message.text) {
-		
+						
 			// Yay! We got a new message!
 			// We retrieve the Facebook user ID of the sender
 			const sender = event.sender.id;
@@ -59,6 +59,10 @@ app.post('/webhook', function (req, res) {
 		
 			var msg = getAnswer(event.message.text);
             sendMessage(event.sender.id, msg);
+		
+			console.log('New message detected, text: ' + msg);
+			console.log('New message detected, sender: ' + sender);
+			console.log('New message detected, sessionId: ' + sessionId);
 		
 			// Let's forward the message to the Wit.ai Bot Engine
             // This will run all actions until our bot has nothing left to do
