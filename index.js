@@ -59,26 +59,27 @@ app.post('/webhook', function (req, res) {
 			// This is needed for our bot to figure out the conversation history
 			const sessionId = findOrCreateSession(sender);
 		
-			var text = event.message.text;
+			var usersMessage = event.message.text;
 		
-			var msg = getAnswer(event.message.text);
+			var msg = getAnswer(usersMessage);
             
-		
 			console.log('New message detected, text: ' + msg);
 			console.log('New message detected, sender: ' + sender);
 			console.log('New message detected, sessionId: ' + sessionId);
 		
-			wit.message('what is the weather in London?', {})
+			wit.message(usersMessage, {})
 			.then((data) => {
 			  var body = JSON.stringify(data);
 			  console.log('Yay, got Wit.ai response: ' + body);
-			  msg = body;
-			  
+			  var answer = body;
+			
+
+			  sendMessage(event.sender.id, answer);
 			})
 			.catch(console.error);
 			
 			
-			sendMessage(event.sender.id, msg);
+			
 			
 		
 			// Let's forward the message to the Wit.ai Bot Engine
