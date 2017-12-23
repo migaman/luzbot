@@ -134,9 +134,22 @@ app.post('/webhook', function (req, res) {
 	,"msg_id":"0xaoNXhmAyWix0sms"
 }
 */
-function getAnswer(witJSON) {
-	var answer = witJSON;
+function getAnswer(nlpJson) {
+	var answer = "";
 	//Process JSON for correct answer
+	
+	if (nlpJson['entities'].['intent']['0']['value'] === 'temperature_get') {
+		answer = "Die aktuelle Temperatur ist...";
+	}
+	else if (nlpJson['entities'].['intent']['0']['value'] === 'temperature_get') {
+		answer = "Die neue Temperatur ist " + nlpJson['entities']['temperature']['0']['value'] + ' ' + nlpJson['entities']['temperature']['0']['type'];
+	}
+	else if (nlpJson['entities'].['intent']['0']['value'] === 'restaurant') {
+		answer = "Ich zeige dir eine Liste von Restaurants...";
+	}
+	else {
+		answer = "Ich verstehe deine Anfrage nicht. Sorry.";
+	}
 	
     return answer;
 }
