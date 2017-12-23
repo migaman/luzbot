@@ -73,7 +73,7 @@ app.post('/webhook', function (req, res) {
 			}
 			else {
 				//forward question to wit framework
-				console.log('New message detected, text: ' + msg);
+				console.log('New message detected, text: ' + question);
 				console.log('New message detected, sender: ' + sender);
 				console.log('New message detected, sessionId: ' + sessionId);
 					
