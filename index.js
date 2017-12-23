@@ -82,7 +82,7 @@ app.post('/webhook', function (req, res) {
 					{
 						var body = JSON.stringify(data);
 						console.log('Yay, got Wit.ai response: ' + body);
-						var answer = getAnswer(body);
+						var answer = getAnswer(data);
 						sendMessage(event.sender.id, answer);
 					})
 				.catch(console.error);
@@ -137,6 +137,7 @@ app.post('/webhook', function (req, res) {
 function getAnswer(nlpJson) {
 	var answer = "";
 	//Process JSON for correct answer
+	
 	
 	if (nlpJson['entities']['intent']['0']['value'] === 'temperature_get') {
 		answer = "Die aktuelle Temperatur ist...";
