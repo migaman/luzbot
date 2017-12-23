@@ -59,26 +59,38 @@ app.post('/webhook', function (req, res) {
 			// This is needed for our bot to figure out the conversation history
 			const sessionId = findOrCreateSession(sender);
 		
-			var usersMessage = event.message.text;
+			var question = event.message.text;
 		
-			var msg = getAnswer(usersMessage);
+		
+			
+			if(question.toUpperCase() == "HI") {
+				answer = "Hi. How are you?";
+				sendMessage(event.sender.id, answer);
+			}
+			else if(question.toUpperCase() == "VERSION") {
+				answer = "Aktuelle Version ist " + VERSION;
+				sendMessage(event.sender.id, answer);
+			}
+			else {
+				//forward question to wit framework
+				console.log('New message detected, text: ' + msg);
+				console.log('New message detected, sender: ' + sender);
+				console.log('New message detected, sessionId: ' + sessionId);
+					
+				wit.message(usersMessage, {})
+					.then((data) => 
+					{
+						var body = JSON.stringify(data);
+						console.log('Yay, got Wit.ai response: ' + body);
+						var answer = getAnswer(body);
+						sendMessage(event.sender.id, answer);
+					})
+				.catch(console.error);
+				
+			}
+			
+			
             
-			console.log('New message detected, text: ' + msg);
-			console.log('New message detected, sender: ' + sender);
-			console.log('New message detected, sessionId: ' + sessionId);
-		
-			wit.message(usersMessage, {})
-			.then((data) => {
-			  var body = JSON.stringify(data);
-			  console.log('Yay, got Wit.ai response: ' + body);
-			  var answer = body;
-			
-
-			  sendMessage(event.sender.id, answer);
-			})
-			.catch(console.error);
-			
-			
 			
 			
 		
@@ -114,31 +126,21 @@ app.post('/webhook', function (req, res) {
     res.sendStatus(200);
 });
 
-
-function getAnswer(question) {
-	var answer = "";
-	if(question.toUpperCase() == "HI") {
-		answer = "Hi. How are you?";
-	}
-	else if(question.toUpperCase() == "VERSION") {
-		answer = "Aktuelle Version ist " + VERSION;
-	}
-	/* Token wird korrekt zur
-	else if(question.toUpperCase() == "TOKEN") {
-		answer = "Token ist: " + WIT_TOKEN;
-	}
-	*/
-	else {
-		answer = "Mmmmh.... what do you mean with " + question;
-	}
-	
-	
-	//Anfrage weiterleiten an wit.api
-	
-	
+//witJSON answer of WIT Engine, i.e.
+/*
+{
+	"_text":"Zeige mir Restaurants"
+	,"entities":{"intent":[{"confidence":0.78031343410165,"value":"restaurant"}]}
+	,"msg_id":"0xaoNXhmAyWix0sms"
+}
+*/
+function getAnswer(witJSON) {
+	var answer = witJSON;
+	//Process JSON for correct answer
 	
     return answer;
 }
+
 
 // generic function sending messages
 function sendMessage(recipientId, msg) {  
