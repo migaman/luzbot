@@ -43,7 +43,7 @@ app.get('/webhook', function (req, res) {
 // handler receiving messages
 app.post('/webhook', function (req, res) {  
     var events = req.body.entry[0].messaging;
-    for (i = 0; i < events.length; i++) {
+    for (var i = 0; i < events.length; i++) {
         var event = events[i];
         if (event.message && event.message.text) {
 		
@@ -55,7 +55,7 @@ app.post('/webhook', function (req, res) {
 			// This is needed for our bot to figure out the conversation history
 			const sessionId = findOrCreateSession(sender);
 		
-			text = event.message.text;
+			var text = event.message.text;
 		
 			var msg = getAnswer(event.message.text);
             sendMessage(event.sender.id, msg);
@@ -97,6 +97,9 @@ function getAnswer(question) {
 	var answer = "";
 	if(question.toUpperCase() == "HI") {
 		answer = "Hi. How are you?";
+	}
+	else if(question.toUpperCase() == "VERSION") {
+		answer = "Aktuelle Version ist 0.0.1 ";
 	}
 	/* Token wird korrekt zur
 	else if(question.toUpperCase() == "TOKEN") {
