@@ -23,6 +23,13 @@ const PORT = process.env.PORT;
 //Needs feature Dyno Metadata (https://stackoverflow.com/questions/7917523/how-do-i-access-the-current-heroku-release-version-programmatically)
 const VERSION = process.env.HEROKU_RELEASE_VERSION;
 
+const { pgClient } = require('pg');
+
+const pgClient = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: true,
+});
+
 
 app.use(bodyParser.urlencoded({extended: false}));  
 app.use(bodyParser.json());  
@@ -137,8 +144,7 @@ app.post('/webhook', function (req, res) {
 function getAnswer(nlpJson) {
 	var answer = "";
 	//Process JSON for correct answer
-	
-	
+
 	if (nlpJson['entities']['intent']['0']['value'] === 'temperature_get') {
 		answer = "Die aktuelle Temperatur ist...";
 	}
@@ -146,11 +152,35 @@ function getAnswer(nlpJson) {
 		answer = "Die neue Temperatur ist " + nlpJson['entities']['temperature']['0']['value'] + ' ' + nlpJson['entities']['temperature']['0']['unit'];
 	}
 	else if (nlpJson['entities']['intent']['0']['value'] === 'restaurant') {
-		answer = "Ich zeige dir eine Liste von Restaurants...";
+		client.connect();
+
+		answer = 'Ich zeige dir eine Liste von Restaurants...';
+		
+		var sql = "SELECT resultname FROM results res LEFT OUTER JOIN category cat ON res.idcategory = cat.idcategory LEFT OUTER JOIN subcategory scat ON res.idsubcategory = scat.idsubcategory WHERE category = 'Eating'";
+		
+		//'SELECT table_schema,table_name FROM information_schema.tables;'
+		
+		client.query(sql, (err, res) => {
+		if (err) throw err;
+		for (let row of res.rows) {
+			console.log(JSON.stringify(row));
+			answer += JSON.stringify(row);
+		}
+		client.end();
+		});
+		
+		answer += "...Ende der Liste...";
 	}
 	else {
 		answer = "Ich verstehe deine Anfrage nicht. Sorry.";
 	}
+
+	/*
+	SELECT resultname FROM results res
+	LEFT OUTER JOIN category cat ON res.idcategory = cat.idcategory
+	LEFT OUTER JOIN subcategory scat ON res.idsubcategory = scat.idsubcategory
+	WHERE category = 'Eating'
+	*/
 	
     return answer;
 }
