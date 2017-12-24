@@ -23,7 +23,7 @@ const PORT = process.env.PORT;
 //Needs feature Dyno Metadata (https://stackoverflow.com/questions/7917523/how-do-i-access-the-current-heroku-release-version-programmatically)
 const VERSION = process.env.HEROKU_RELEASE_VERSION;
 
-const { pgClient } = require('pg');
+const { Client } = require('pg');
 
 const pgClient = new Client({
   connectionString: process.env.DATABASE_URL,
@@ -152,7 +152,7 @@ function getAnswer(nlpJson) {
 		answer = "Die neue Temperatur ist " + nlpJson['entities']['temperature']['0']['value'] + ' ' + nlpJson['entities']['temperature']['0']['unit'];
 	}
 	else if (nlpJson['entities']['intent']['0']['value'] === 'restaurant') {
-		client.connect();
+		pgClient.connect();
 
 		answer = 'Ich zeige dir eine Liste von Restaurants...';
 		
@@ -160,13 +160,13 @@ function getAnswer(nlpJson) {
 		
 		//'SELECT table_schema,table_name FROM information_schema.tables;'
 		
-		client.query(sql, (err, res) => {
+		pgClient.query(sql, (err, res) => {
 		if (err) throw err;
 		for (let row of res.rows) {
 			console.log(JSON.stringify(row));
 			answer += JSON.stringify(row);
 		}
-		client.end();
+		pgClient.end();
 		});
 		
 		answer += "...Ende der Liste...";
