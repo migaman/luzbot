@@ -165,6 +165,7 @@ function getAnswer(nlpJson) {
 		for (let row of res.rows) {
 			console.log(JSON.stringify(row));
 			answer += JSON.stringify(row);
+			answer += "test";
 		}
 		pgClient.end();
 		});
