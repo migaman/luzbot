@@ -5,11 +5,13 @@ var bodyParser = require('body-parser');
 var request = require('request');  
 var app = express();
 
+const PORT = process.env.PORT || 3000;
+
 // Optional. You will see this name in eg. 'ps' or 'top' command
 process.title = 'luzbot';
 
 // Port where we'll run the websocket server
-var webSocketsServerPort = 1337;
+var webSocketsServerPort = PORT;
 
 // websocket and http servers
 var webSocketServer = require('websocket').server;
@@ -39,7 +41,7 @@ try {
 // Variables are defined in Heroku
 const WIT_TOKEN = process.env.WIT_TOKEN;
 const FB_PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
-const PORT = process.env.PORT || 3000;
+
 //Needs feature Dyno Metadata (https://stackoverflow.com/questions/7917523/how-do-i-access-the-current-heroku-release-version-programmatically)
 const VERSION = process.env.HEROKU_RELEASE_VERSION;
 
@@ -64,19 +66,25 @@ var colors = [ 'green', 'blue', 'magenta', 'purple', 'plum', 'orange' ];
 // ... in random order
 colors.sort(function(a,b) { return Math.random() > 0.5; } );
 
-
+/*
 app.use(bodyParser.urlencoded({extended: false}));  
 app.use(bodyParser.json());  
 app.listen(PORT);
+*/
 console.log('Listening on :' + PORT + '...');
 
 
 /**
  * HTTP server
  */
-var server = http.createServer(function(request, response) {
+/*var server = http.createServer(function(request, response) {
     // Not important for us. We're writing WebSocket server, not HTTP server
 });
+*/
+//initialize a simple http server
+var server = http.createServer(app);
+
+
 server.listen(webSocketsServerPort, function() {
     console.log((new Date()) + " Server is listening on port " + webSocketsServerPort);
 });
