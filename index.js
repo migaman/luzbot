@@ -10,8 +10,6 @@ const PORT = process.env.PORT || 3000;
 // Optional. You will see this name in eg. 'ps' or 'top' command
 process.title = 'luzbot';
 
-// Port where we'll run the websocket server
-var webSocketsServerPort = PORT;
 
 // websocket and http servers
 var webSocketServer = require('websocket').server;
@@ -66,12 +64,12 @@ var colors = [ 'green', 'blue', 'magenta', 'purple', 'plum', 'orange' ];
 // ... in random order
 colors.sort(function(a,b) { return Math.random() > 0.5; } );
 
-/*
+
 app.use(bodyParser.urlencoded({extended: false}));  
 app.use(bodyParser.json());  
-app.listen(PORT);
-*/
-console.log('Listening on :' + PORT + '...');
+//app.listen(PORT);
+
+//console.log('Listening on :' + PORT + '...');
 
 
 /**
@@ -85,8 +83,8 @@ console.log('Listening on :' + PORT + '...');
 var server = http.createServer(app);
 
 
-server.listen(webSocketsServerPort, function() {
-    console.log((new Date()) + " Server is listening on port " + webSocketsServerPort);
+server.listen(PORT, function() {
+    console.log((new Date()) + " Server is listening on port " + PORT);
 });
 
 /**
@@ -100,9 +98,9 @@ var wsServer = new webSocketServer({
 
 
 // Server frontpage
-app.get('/', function (req, res) {  
+/*app.get('/', function (req, res) {  
     res.send('This is TestBot Server');
-});
+});*/
 
 // Facebook Webhook
 app.get('/webhook', function (req, res) {  
