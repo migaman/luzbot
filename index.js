@@ -327,9 +327,9 @@ function sendAnswer(botType, recipientId, nlpJson, question, index) {
 		var sql = "SELECT resultname FROM results res LEFT OUTER JOIN category cat ON res.idcategory = cat.idcategory LEFT OUTER JOIN subcategory scat ON res.idsubcategory = scat.idsubcategory WHERE LOWER(category) = LOWER('" + intent  + "')";
 		*/
 		
-		var sql = "SELECT r.resultname AS resultname FROM resultalpha r WHERE LOWER(r.category) = LOWER('" + intent  + "')";
+		var sql = "SELECT r.resultname AS resultname FROM resultalpha r WHERE LOWER(r.category) = LOWER($1)";
 		
-		pgClient.query(sql, (err, res) => {
+		pgClient.query(sql,[intent], (err, res) => {
 			if (err) throw err;
 			var answer = "I suggest the following: ";
 			for (let row of res.rows) {
