@@ -132,7 +132,7 @@ app.post('/webhook', function (req, res) {
 			console.log('New message detected, sender: ' + sender);
 			
 			
-			sendBotAnswer(2, sender, question);
+			sendBotAnswer(2, sender, question, index);
 			
         }
     }
@@ -156,11 +156,6 @@ wsServer.on('request', function(request) {
 
     console.log((new Date()) + ' Connection accepted.');
 
-    // send back chat history
-    if (history.length > 0) {
-        connection.sendUTF(JSON.stringify( { type: 'history', data: history} ));
-    }
-
     // user sent some message
     connection.on('message', function(message) {
         if (message.type === 'utf8') { // accept only text
@@ -178,11 +173,11 @@ wsServer.on('request', function(request) {
                             + userName + ': ' + message.utf8Data);
                 
 				//Eingegeben Nachricht ausgeben...
-				sendMessageNativeBot(message.utf8Data, userName, userColor);
+				sendMessageNativeBot(message.utf8Data, userName, userColor, index);
 				
                 //Sende Bot Anwort...
 				var question = message.utf8Data;
-				sendBotAnswer(1, 0, question);
+				sendBotAnswer(1, 0, question, index);
 				
 
             }
@@ -305,17 +300,17 @@ const wit = new Wit({
 
 
 //Process JSON for correct answer
-function sendAnswer(botType, recipientId, nlpJson, question) {
+function sendAnswer(botType, recipientId, nlpJson, question, index) {
 	//TODO: Implement connection pool 
 	//TODO: parametrized query
 	
 	if(question.toUpperCase() == "HI") {
 		var answer = "Hi. How are you?";
-		sendMessage(botType, recipientId, answer);
+		sendMessage(botType, recipientId, answer, index);
 	}
 	else if(question.toUpperCase() == "VERSION") {
 		var answer = "Aktuelle Version ist " + VERSION;
-		sendMessage(botType, recipientId, answer);
+		sendMessage(botType, recipientId, answer, index);
 	}
 	else if(nlpJson.hasOwnProperty('entities') && Object.keys(nlpJson.entities).length > 0){
 		console.log('property entities exists and has at least one entity');
@@ -341,10 +336,10 @@ function sendAnswer(botType, recipientId, nlpJson, question) {
 			if(question.lastIndexOf('data', 0) === 0) {
 				//if question starts with data show the wit.ai json
 				var result = 'Category: ' + intent + ", json:" + JSON.stringify(nlpJson);
-				sendMessage(botType, recipientId, result);
+				sendMessage(botType, recipientId, result, index);
 			}
 			else {
-				sendMessage(botType, recipientId, answer);
+				sendMessage(botType, recipientId, answer, index);
 			}
 			
 		});
@@ -352,7 +347,7 @@ function sendAnswer(botType, recipientId, nlpJson, question) {
 	}
 	else {
 		var answer = "Ich verstehe deine Anfrage nicht. Sorry.";
-		sendMessage(botType, recipientId, answer);
+		sendMessage(botType, recipientId, answer, index);
 	}
 	
 }
@@ -360,7 +355,7 @@ function sendAnswer(botType, recipientId, nlpJson, question) {
 
 
 
-function sendBotAnswer(botType, recipientId, question) {
+function sendBotAnswer(botType, recipientId, question, index) {
 	
 	//forward question to wit framework
 				
@@ -369,16 +364,16 @@ function sendBotAnswer(botType, recipientId, question) {
 		{
 			var body = JSON.stringify(data);
 			console.log('Wit.ai response: ' + body);
-			sendAnswer(botType, recipientId, data, question);
+			sendAnswer(botType, recipientId, data, question, index);
 		})
 	.catch(console.error);
 	
 }
 
-function sendMessage(botType, recipientId, msg) {
+function sendMessage(botType, recipientId, msg, index) {
 	if(botType == 1) {
 		//Native Chat
-		sendMessageNativeBot(msg, 'Luzbot', 'red');
+		sendMessageNativeBot(msg, 'Luzbot', 'red', index);
 	}
 	else if(botType == 2) {
 		//Facebook Chat
@@ -387,7 +382,7 @@ function sendMessage(botType, recipientId, msg) {
 }
 
 
-function sendMessageNativeBot(msg, userName, userColor) {
+function sendMessageNativeBot(msg, userName, userColor, index) {
 	// we want to keep history of all sent messages
 	var obj = {
 		time: (new Date()).getTime(),
@@ -400,8 +395,13 @@ function sendMessageNativeBot(msg, userName, userColor) {
 
 	// broadcast message to all connected clients
 	var json = JSON.stringify({ type:'message', data: obj });
+	
+	//Only for the specific client
 	for (var i=0; i < clients.length; i++) {
-		clients[i].sendUTF(json);
+		if(i == index) {
+			clients[i].sendUTF(json);
+		}
+		
 	}
 
 }
