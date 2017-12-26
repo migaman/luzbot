@@ -4,8 +4,9 @@ var express = require('express');
 var bodyParser = require('body-parser');  
 var request = require('request');  
 var app = express();
+const pg = require('pg');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // Optional. You will see this name in eg. 'ps' or 'top' command
 process.title = 'luzbot';
@@ -43,12 +44,8 @@ const FB_PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 //Needs feature Dyno Metadata (https://stackoverflow.com/questions/7917523/how-do-i-access-the-current-heroku-release-version-programmatically)
 const VERSION = process.env.HEROKU_RELEASE_VERSION;
 
-const { Client } = require('pg');
+//const { Client } = require('pg');
 
-const pgClient = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: true,
-});
 
 
 /**
@@ -329,7 +326,16 @@ function sendAnswer(botType, recipientId, nlpJson) {
 		}
 		else if (nlpJson['entities']['intent']['0']['value'] === 'restaurant') {
 			var answer = 'Ich zeige dir eine Liste von Restaurants...';
-			
+
+			/* https://github.com/brianc/node-postgres/issues/1352
+			Yeah though it's not really documented clients are cheap to instantiate and should be considered 'used up' once they've been disconnected. There's a bit of a state machine inside the client w/ a bunch of event handlers being established after the connect event. Your best bet is going to be to throw the old one away & make a new one. The connection handshake over tcp is the part that takes a little bit of time, but reusing an existing client wouldn't save any time there as reconnecting would still need to happen - it would also introduce additional complexity in ensuring the old event handlers were disposed and the new ones set up correctly. I'll re-open this & add it to the 7.0 milestone to return an error if a client has connect called on it more than once - hopefully that will make things more clear.
+			*/
+			//TODO: Implement connection pool 
+			var pgClient = new pg.Client({
+			  connectionString: process.env.DATABASE_URL,
+			  ssl: true,
+			});
+
 			pgClient.connect();
 
 			var sql = "SELECT resultname FROM results res LEFT OUTER JOIN category cat ON res.idcategory = cat.idcategory LEFT OUTER JOIN subcategory scat ON res.idsubcategory = scat.idsubcategory WHERE category = 'Eating'";
