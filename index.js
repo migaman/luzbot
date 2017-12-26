@@ -323,7 +323,11 @@ function sendAnswer(botType, recipientId, nlpJson, question, index) {
 
 		pgClient.connect();
 
+		/*
 		var sql = "SELECT resultname FROM results res LEFT OUTER JOIN category cat ON res.idcategory = cat.idcategory LEFT OUTER JOIN subcategory scat ON res.idsubcategory = scat.idsubcategory WHERE LOWER(category) = LOWER('" + intent  + "')";
+		*/
+		
+		var sql = "SELECT r.resultname AS resultname FROM resultalpha r WHERE LOWER(r.category) = LOWER('" + intent  + "')";
 		
 		pgClient.query(sql, (err, res) => {
 			if (err) throw err;
