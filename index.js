@@ -305,67 +305,9 @@ const wit = new Wit({
 
 
 //Process JSON for correct answer
-function sendAnswer(botType, recipientId, nlpJson) {
-	if(nlpJson.hasOwnProperty('entities') && Object.keys(nlpJson.entities).length > 0){
-		console.log('property entities exists and has at least one entity');
-	
-		if (nlpJson['entities']['intent']['0']['value'] === 'temperature_get') {
-			var answer = "Die aktuelle Temperatur ist...";
-			sendMessage(botType, recipientId, answer);
-		}
-		else if (nlpJson['entities']['intent']['0']['value'] === 'temperature_set') {
-			var answer = "Die neue Temperatur ist ";
-			if(nlpJson.entities.hasOwnProperty('temperature')) {
-				answer += nlpJson['entities']['temperature']['0']['value'] + ' ' + nlpJson['entities']['temperature']['0']['unit'];
-			}
-			else {
-				answer = "Ich verstehe die neue Temperatur nicht!";
-			}
-			
-			sendMessage(botType, recipientId, answer);
-		}
-		else if (nlpJson['entities']['intent']['0']['value'] === 'restaurant') {
-			var answer = 'Ich zeige dir eine Liste von Restaurants...';
-
-			/* https://github.com/brianc/node-postgres/issues/1352
-			Yeah though it's not really documented clients are cheap to instantiate and should be considered 'used up' once they've been disconnected. There's a bit of a state machine inside the client w/ a bunch of event handlers being established after the connect event. Your best bet is going to be to throw the old one away & make a new one. The connection handshake over tcp is the part that takes a little bit of time, but reusing an existing client wouldn't save any time there as reconnecting would still need to happen - it would also introduce additional complexity in ensuring the old event handlers were disposed and the new ones set up correctly. I'll re-open this & add it to the 7.0 milestone to return an error if a client has connect called on it more than once - hopefully that will make things more clear.
-			*/
-			//TODO: Implement connection pool 
-			var pgClient = new pg.Client({
-			  connectionString: process.env.DATABASE_URL,
-			  ssl: true,
-			});
-
-			pgClient.connect();
-
-			var sql = "SELECT resultname FROM results res LEFT OUTER JOIN category cat ON res.idcategory = cat.idcategory LEFT OUTER JOIN subcategory scat ON res.idsubcategory = scat.idsubcategory WHERE category = 'Eating'";
-			
-			pgClient.query(sql, (err, res) => {
-				if (err) throw err;
-				for (let row of res.rows) {
-					answer += row.resultname + "; ";
-				}
-				answer += "...Ende der Liste...";
-				pgClient.end();
-			
-				sendMessage(botType, recipientId, answer);
-			
-			});
-			
-			
-		}
-	}
-	else {
-		var answer = "Ich verstehe deine Anfrage nicht. Sorry.";
-		sendMessage(botType, recipientId, answer);
-	}
-
-}
-
-
-
-
-function sendBotAnswer(botType, recipientId, question) {
+function sendAnswer(botType, recipientId, nlpJson, question) {
+	//TODO: Implement connection pool 
+	//TODO: parametrized query
 	
 	if(question.toUpperCase() == "HI") {
 		var answer = "Hi. How are you?";
@@ -375,18 +317,62 @@ function sendBotAnswer(botType, recipientId, question) {
 		var answer = "Aktuelle Version ist " + VERSION;
 		sendMessage(botType, recipientId, answer);
 	}
-	else {
-		//forward question to wit framework
-				
-		wit.message(question, {})
-			.then((data) => 
-			{
-				var body = JSON.stringify(data);
-				console.log('Wit.ai response: ' + body);
-				sendAnswer(botType, recipientId, data);
-			})
-		.catch(console.error);
+	else if(nlpJson.hasOwnProperty('entities') && Object.keys(nlpJson.entities).length > 0){
+		console.log('property entities exists and has at least one entity');
+		var intent = nlpJson['entities']['intent']['0']['value'];
+						
+		var pgClient = new pg.Client({
+		  connectionString: process.env.DATABASE_URL,
+		  ssl: true,
+		});
+
+		pgClient.connect();
+
+		var sql = "SELECT resultname FROM results res LEFT OUTER JOIN category cat ON res.idcategory = cat.idcategory LEFT OUTER JOIN subcategory scat ON res.idsubcategory = scat.idsubcategory WHERE LOWER(category) = LOWER('" + intent  + "')";
+		
+		pgClient.query(sql, (err, res) => {
+			if (err) throw err;
+			var answer = "I suggest the following: ";
+			for (let row of res.rows) {
+				answer += row.resultname + "; ";
+			}
+			pgClient.end();
+			
+			if(question.lastIndexOf('data', 0) === 0) {
+				//if question starts with data show the wit.ai json
+				var result = 'Category: ' + intent + ", json:" + JSON.stringify(nlpJson);
+				sendMessage(botType, recipientId, result);
+			}
+			else {
+				sendMessage(botType, recipientId, answer);
+			}
+			
+		});
+
 	}
+	else {
+		var answer = "Ich verstehe deine Anfrage nicht. Sorry.";
+		sendMessage(botType, recipientId, answer);
+	}
+	
+}
+
+
+
+
+function sendBotAnswer(botType, recipientId, question) {
+	
+	//forward question to wit framework
+				
+	wit.message(question, {})
+		.then((data) => 
+		{
+			var body = JSON.stringify(data);
+			console.log('Wit.ai response: ' + body);
+			sendAnswer(botType, recipientId, data, question);
+		})
+	.catch(console.error);
+	
 }
 
 function sendMessage(botType, recipientId, msg) {
@@ -422,43 +408,6 @@ function sendMessageNativeBot(msg, userName, userColor) {
 
 
 
-function getAnswer(nlpJson) {
-	var answer = "";
-	//Process JSON for correct answer
-
-	if (nlpJson['entities']['intent']['0']['value'] === 'temperature_get') {
-		answer = "Die aktuelle Temperatur ist...";
-	}
-	else if (nlpJson['entities']['intent']['0']['value'] === 'temperature_set') {
-		answer = "Die neue Temperatur ist " + nlpJson['entities']['temperature']['0']['value'] + ' ' + nlpJson['entities']['temperature']['0']['unit'];
-	}
-	else if (nlpJson['entities']['intent']['0']['value'] === 'restaurant') {
-		pgClient.connect();
-
-		answer = 'Ich zeige dir eine Liste von Restaurants...';
-		
-		var sql = "SELECT resultname FROM results res LEFT OUTER JOIN category cat ON res.idcategory = cat.idcategory LEFT OUTER JOIN subcategory scat ON res.idsubcategory = scat.idsubcategory WHERE category = 'Eating'";
-		
-		//'SELECT table_schema,table_name FROM information_schema.tables;'
-	
-	
-		pgClient.query(sql, (err, res) => {
-		if (err) throw err;
-		for (let row of res.rows) {
-			console.log(JSON.stringify(row));
-			answer += JSON.stringify(row);
-		}
-		pgClient.end();
-		});
-		
-		answer += "...Ende der Liste...";
-	}
-	else {
-		answer = "Ich verstehe deine Anfrage nicht. Sorry.";
-	}
-
-    return answer;
-}
 
 // ----------------------------------------------------------------------------
 // Facebook Messenger specific code
