@@ -64,10 +64,12 @@ var colors = [ 'green', 'blue', 'magenta', 'purple', 'plum', 'orange' ];
 // ... in random order
 colors.sort(function(a,b) { return Math.random() > 0.5; } );
 
-
+/*
 app.use(bodyParser.urlencoded({extended: false}));  
 app.use(bodyParser.json());  
+*/
 //app.listen(PORT);
+app.use(express.static(__dirname + "/"))
 
 //console.log('Listening on :' + PORT + '...');
 
