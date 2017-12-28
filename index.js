@@ -213,7 +213,8 @@ wsServer.on('request', function(request) {
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
 
 const fbMessage = (id, text) => {
-  
+  console.log("my bot id: " + MY_BOT_ID);
+  console.log("fbMessage id: " + id);
   if(id != MY_BOT_ID) {
 	  const body = JSON.stringify({
 		recipient: { id },
