@@ -40,6 +40,7 @@ try {
 // Variables are defined in Heroku
 const WIT_TOKEN = process.env.WIT_TOKEN;
 const FB_PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+const MY_BOT_ID = process.env.LUZBOT_ID || 123;
 
 //Needs feature Dyno Metadata (https://stackoverflow.com/questions/7917523/how-do-i-access-the-current-heroku-release-version-programmatically)
 const VERSION = process.env.HEROKU_RELEASE_VERSION;
@@ -128,6 +129,9 @@ app.post('/webhook', function (req, res) {
 		
 			var question = event.message.text;
 		
+		
+			console.log('New message detected, json: ' + JSON.stringify(events));
+		
 			console.log('New message detected, text: ' + question);
 			console.log('New message detected, sender: ' + sender);
 			
@@ -209,23 +213,28 @@ wsServer.on('request', function(request) {
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
 
 const fbMessage = (id, text) => {
-  const body = JSON.stringify({
-    recipient: { id },
-    message: { text },
-  });
-  const qs = 'access_token=' + encodeURIComponent(FB_PAGE_ACCESS_TOKEN);
-  return fetch('https://graph.facebook.com/me/messages?' + qs, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body,
-  })
-  .then(rsp => rsp.json())
-  .then(json => {
-    if (json.error && json.error.message) {
-      throw new Error(json.error.message);
-    }
-    return json;
-  });
+  
+  if(id != MY_BOT_ID) {
+	  const body = JSON.stringify({
+		recipient: { id },
+		message: { text },
+	  });
+	  const qs = 'access_token=' + encodeURIComponent(FB_PAGE_ACCESS_TOKEN);
+	  return fetch('https://graph.facebook.com/me/messages?' + qs, {
+		method: 'POST',
+		headers: {'Content-Type': 'application/json'},
+		body,
+	  })
+	  .then(rsp => rsp.json())
+	  .then(json => {
+		if (json.error && json.error.message) {
+		  throw new Error(json.error.message);
+		}
+		return json;
+	  });
+  }
+  
+  
 };
 
 // ----------------------------------------------------------------------------
@@ -431,7 +440,7 @@ function sendMessageFacebook(recipientId, msg) {
         if (error) {
             console.log('Error sending message: ', error);
         } else if (response.body.error) {
-            console.log('Error: ', response.body.error);
+            console.log('Error on sendMessageFacebook: ', response.body.error);
         }
     });
 };
