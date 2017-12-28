@@ -132,7 +132,7 @@ app.post('/webhook', function (req, res) {
 			console.log('New message detected, sender: ' + sender);
 			
 			
-			sendBotAnswer(2, sender, question, index);
+			sendBotAnswer(2, sender, question, 0);
 			
         }
     }
