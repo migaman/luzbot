@@ -213,28 +213,25 @@ wsServer.on('request', function(request) {
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
 
 const fbMessage = (id, text) => {
-  console.log("my bot id: " + MY_BOT_ID);
-  console.log("fbMessage id: " + id);
-  if(id != MY_BOT_ID) {
-	  const body = JSON.stringify({
-		recipient: { id },
-		message: { text },
-	  });
-	  const qs = 'access_token=' + encodeURIComponent(FB_PAGE_ACCESS_TOKEN);
-	  return fetch('https://graph.facebook.com/me/messages?' + qs, {
-		method: 'POST',
-		headers: {'Content-Type': 'application/json'},
-		body,
-	  })
-	  .then(rsp => rsp.json())
-	  .then(json => {
-		if (json.error && json.error.message) {
-		  throw new Error(json.error.message);
-		}
-		return json;
-	  });
-  }
   
+  const body = JSON.stringify({
+	recipient: { id },
+	message: { text },
+  });
+  const qs = 'access_token=' + encodeURIComponent(FB_PAGE_ACCESS_TOKEN);
+  return fetch('https://graph.facebook.com/me/messages?' + qs, {
+	method: 'POST',
+	headers: {'Content-Type': 'application/json'},
+	body,
+  })
+  .then(rsp => rsp.json())
+  .then(json => {
+	if (json.error && json.error.message) {
+	  throw new Error(json.error.message);
+	}
+	return json;
+  });
+    
   
 };
 
@@ -276,7 +273,8 @@ const actions = {
 	console.log('Our bot has something to say!' + recipientId);
     if (recipientId) {
 		console.log('// Yay, we found our recipient!');
-      // Yay, we found our recipient!
+      
+	  // Yay, we found our recipient!
       // Let's forward our bot response to her.
       // We return a promise to let our bot know when we're done sending
       return fbMessage(recipientId, text)
@@ -428,20 +426,26 @@ function sendMessageNativeBot(msg, userName, userColor, index) {
 
 //Sends a Message in Facebook Chat
 function sendMessageFacebook(recipientId, msg) {  
-	var message = {text: msg}; 
-    request({
-        url: 'https://graph.facebook.com/v2.10/me/messages',
-        qs: {access_token: FB_PAGE_ACCESS_TOKEN},
-        method: 'POST',
-        json: {
-            recipient: {id: recipientId},
-            message: message,
-        }
-    }, function(error, response, body) {
-        if (error) {
-            console.log('Error sending message: ', error);
-        } else if (response.body.error) {
-            console.log('Error on sendMessageFacebook: ', response.body.error);
-        }
-    });
+	
+	console.log("my bot id: " + MY_BOT_ID);
+	console.log("fbMessage id: " + recipientId);
+	if(recipientId != MY_BOT_ID) {
+	
+		var message = {text: msg}; 
+		request({
+			url: 'https://graph.facebook.com/v2.10/me/messages',
+			qs: {access_token: FB_PAGE_ACCESS_TOKEN},
+			method: 'POST',
+			json: {
+				recipient: {id: recipientId},
+				message: message,
+			}
+		}, function(error, response, body) {
+			if (error) {
+				console.log('Error sending message: ', error);
+			} else if (response.body.error) {
+				console.log('Error on sendMessageFacebook: ', response.body.error);
+			}
+		});
+	}
 };
