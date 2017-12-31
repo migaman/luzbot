@@ -4,9 +4,15 @@ var express = require('express');
 var bodyParser = require('body-parser');  
 var request = require('request');  
 var app = express();
+var apiai = require('apiai');
+
+
+
 const pg = require('pg');
 
 const PORT = process.env.PORT;
+
+var googleai = apiai(process.env.APIAI_TOKEN);
 
 // Optional. You will see this name in eg. 'ps' or 'top' command
 process.title = 'luzbot';
@@ -136,7 +142,7 @@ app.post('/webhook', function (req, res) {
 			console.log('New message detected, sender: ' + sender);
 			
 			
-			sendBotAnswer(2, sender, question, 0);
+			sendBotAnswer(2, sender, question, 0, 2);
 			
         }
     }
@@ -181,7 +187,7 @@ wsServer.on('request', function(request) {
 				
                 //Sende Bot Anwort...
 				var question = message.utf8Data;
-				sendBotAnswer(1, 0, question, index);
+				sendBotAnswer(1, userName, question, index, 2);
 				
 
             }
@@ -367,18 +373,46 @@ function sendAnswer(botType, recipientId, nlpJson, question, index) {
 
 
 
-function sendBotAnswer(botType, recipientId, question, index) {
+function sendBotAnswer(botType, recipientId, question, index, aiengine) {
 	
-	//forward question to wit framework
+
 				
-	wit.message(question, {})
-		.then((data) => 
-		{
-			var body = JSON.stringify(data);
-			console.log('Wit.ai response: ' + body);
-			sendAnswer(botType, recipientId, data, question, index);
-		})
-	.catch(console.error);
+	if(aiengine == 1) {
+		//forward question to wit framework --> Facebok
+		wit.message(question, {})
+			.then((data) => 
+			{
+				var body = JSON.stringify(data);
+				console.log('Wit.ai response: ' + body);
+				sendAnswer(botType, recipientId, data, question, index);
+			})
+		.catch(console.error);
+	}
+	else if (aiengine == 2) {
+		//Google API.ai (dialogflow)
+		
+		var request = googleai.textRequest(question, {
+			sessionId: recipientId
+		});
+		
+		request.on('response', function(response) {
+			var body = JSON.stringify(response);
+			console.log('API.ai response: ' + body);
+			
+			//sendAnswer(botType, recipientId, response, question, index);
+			sendAnswerFromAPIAI(botType, recipientId, response, question, index);
+		});
+
+		request.on('error', function(error) {
+			console.log(error);
+		});
+
+		request.end();
+
+			
+	}
+				
+	
 	
 }
 
@@ -449,3 +483,41 @@ function sendMessageFacebook(recipientId, msg) {
 		});
 	}
 };
+
+
+
+
+
+
+
+//Process JSON for correct answer
+function sendAnswerFromAPIAI(botType, recipientId, nlpJson, question, index) {
+
+	if(question.toUpperCase() == "HI") {
+		var answer = "Hi. How are you?";
+		sendMessage(botType, recipientId, answer, index);
+	}
+	else if(question.toUpperCase() == "VERSION") {
+		var answer = "Aktuelle Version ist " + VERSION;
+		sendMessage(botType, recipientId, answer, index);
+	}
+	else if(nlpJson.hasOwnProperty('result') && Object.keys(nlpJson.result).length > 0){
+		
+		console.log('property result exists and has at least one entity');
+		var result = nlpJson['result']; 
+		console.log('result: ' + JSON.stringify(result));
+		
+		var fulfillment = nlpJson['result']['fulfillment']; 
+		console.log('fulfillment: ' + JSON.stringify(fulfillment));
+		
+		var speech = nlpJson['result']['fulfillment']['speech']; 
+		console.log('speech: ' + JSON.stringify(speech));
+		
+		sendMessage(botType, recipientId, speech, index);
+	}
+	else {
+		var answer = "Ich verstehe deine Anfrage nicht. Sorry.";
+		sendMessage(botType, recipientId, answer, index);
+	}
+	
+}
